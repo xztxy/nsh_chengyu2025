@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>成语审核界面</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1>待审核的成语</h1>
+    {% if idioms %}
+    <div class="table-responsive">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>成语</th>
+            <th>拼音</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for idiom in idioms %}
+          <tr>
+            <td><strong>{{ idiom.word }}</strong></td>
+            <td>{{ idiom.pinyin_r }}</td>
+            <td>
+              <form method="post" action="/process_idiom" style="display: inline;">
+                <input type="hidden" name="word" value="{{ idiom.word }}">
+                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">通过</button>
+                <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">拒绝</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="alert alert-info mt-4">没有待审核的成语。</div>
+    {% endif %}
+  </div>
+</body>
+</html>

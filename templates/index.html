@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>枫林解语成语查询</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start; /* 将居中对齐修改为顶部对齐 */
+      min-height: 100vh;
+      overflow-x: hidden; /* 防止水平滚动条 */
+    }
+    
+    .main-container {
+      display: flex;
+      flex-direction: column; /* 垂直布局适配手机屏幕 */
+      width: 100%;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      margin: 10px 0; /* 增加上下间距 */
+      max-width: 600px; /* 限制最大宽度以适配小屏幕 */
+    }
+
+    .sidebar, .content, .result {
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .sidebar {
+      background-color: #f0f0f0;
+      border-bottom: 2px solid #ddd; /* 将分隔线移动到底部 */
+    }
+
+    .content, .result {
+      width: 100%;
+    }
+
+    .result {
+      max-height: 50vh; /* 限制结果区域高度 */
+      overflow-y: auto;
+    }
+
+    .sidebar h2, .content h2, .result h2 {
+      color: #333;
+      font-size: 1.5em;
+    }
+
+    .sidebar p, .sidebar ul, .result ul {
+      color: #555;
+      font-size: 0.9em;
+    }
+
+    .sidebar ul {
+      padding-left: 20px;
+    }
+
+    .form-row {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-container">
+    <div class="sidebar">
+      <h2>使用说明</h2>
+      <p>输入您希望包含或者排除的拼音声母和韵母，可以使用任意符号分隔多个拼音条件。您还可以指定每个字的位置条件查询成语。</p>
+      <p>您可以添加新的成语到待审核列表中。待审核成语需要经过验证后才会添加到数据库中。</p>
+
+      <h2>更新内容</h2>
+      <ul>
+        <li>优化了成语查询算法，提升效率。</li>
+        <li>页面布局调整，使用更清晰的表单结构来提高用户体验。</li>
+        <li>只区分包含和排除，无需单独输入。</li>
+        <li>增加条件检查，当条件冲突提示冲突的条件。</li>
+      </ul>
+
+      <h2 class="mt-4">添加成语</h2>
+      <form method="post" action="/add_idiom">
+        <div class="form-group">
+          <label for="new_idiom">成语:</label>
+          <input type="text" class="form-control" name="new_idiom" id="new_idiom" required>
+        </div>
+        <div class="form-group">
+          <label for="new_pinyin">拼音:</label>
+          <input type="text" class="form-control" name="new_pinyin" id="new_pinyin" required>
+        </div>
+        <button type="submit" class="btn btn-success">添加到待审核</button>
+      </form>
+    </div>
+
+    <div class="content">
+      <h1 class="mb-4">逆水寒枫林解语成语查询</h1>
+      <form method="post" action="/search" id="idiomSearchForm">
+        <div class="form-group">
+          <label for="include_pinyin">包含的声母和韵母:</label>
+          <input type="text" class="form-control" name="include_pinyin" id="include_pinyin" value="{{ request.form.get('include_pinyin', '') }}">
+        </div>
+        <div class="form-group">
+          <label for="exclude_pinyin">排除的声母和韵母:</label>
+          <input type="text" class="form-control" name="exclude_pinyin" id="exclude_pinyin" value="{{ request.form.get('exclude_pinyin', '') }}">
+        </div>
+
+        {% for i in range(4) %}
+        <div class="form-row">
+          <div class="col">
+            <label for="position{{ i }}_include">第{{ i+1 }}个字包含的声母和韵母:</label>
+            <input type="text" class="form-control" name="position{{ i }}_include" value="{{ request.form.get('position' ~ i ~ '_include', '') }}">
+          </div>
+          <div class="col">
+            <label for="position{{ i }}_exclude">第{{ i+1 }}个字排除的声母和韵母:</label>
+            <input type="text" class="form-control" name="position{{ i }}_exclude" value="{{ request.form.get('position' ~ i ~ '_exclude', '') }}">
+          </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary mt-3">查询</button>
+        <button type="button" class="btn btn-danger mt-3" onclick="resetForm()">清除</button>
+      </form>
+
+      {% if error_message %}
+      <div class="alert alert-danger mt-4">{{ error_message }}</div>
+      {% endif %}
+    </div>
+
+    <div class="result">
+      {% if idioms %}
+      <h2 class="mt-4">符合条件的成语:</h2>
+      <ul class="list-group">
+        {% for item in idioms %}
+        <li class="list-group-item">
+          <strong>{{ item.word }}</strong>
+          <em>({{ item.pinyin }})</em> - 权重: {{ item.weight }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% elif idioms is not none %}
+      <div class="alert alert-info mt-4">没有满足条件的成语。</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    function resetForm() {
+      document.getElementById('idiomSearchForm').reset();
+      const inputs = document.querySelectorAll('#idiomSearchForm input');
+      inputs.forEach(input => input.value = '');
+    }
+  </script>
+</body>
+</html>
