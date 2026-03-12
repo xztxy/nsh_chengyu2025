@@ -1,18 +1,46 @@
 version: '3.8'
 
+# 定义网络
+networks:
+  nsh-chengyu-network:
+    driver: bridge
+    name: nsh-chengyu-network
+
+# 定义卷
+volumes:
+  nsh-chengyu-db:
+    name: nsh-chengyu-db
+
+# 定义服务
 services:
   nsh-chengyu:
-    build: .
+    build: 
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8666:8666"
     environment:
       - FLASK_ENV=production
       - PORT=8666
+      - SECRET_KEY=${SECRET_KEY:-$(openssl rand -hex 16)}
+      - SECRET_PASSWORD=${SECRET_PASSWORD:-lsz20100}
+      - DB_PATH=idioms.db
     volumes:
-      - ./data:/app/data
+      - nsh-chengyu-db:/app
     restart: unless-stopped
+    networks:
+      - nsh-chengyu-network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8666/"]
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: "512M"
+        reservations:
+          cpus: "0.25"
+          memory: "256M"

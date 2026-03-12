@@ -1,142 +1,19 @@
-from flask import Flask, request, render_template, redirect, url_for, session
-import json
-import re
-import os
-from flask_caching import Cache
+from flask import Flask, request, render_template, redirect, url_for, session, jsonify
 import logging
 import hashlib
-import secrets
+from config import Config
+from db import load_pending_idioms, save_pending_idiom, update_idiom_weight, delete_pending_idiom, check_idiom_exists, save_idiom, get_db_connection, get_idiom_detail
+from search import init_cache, search_idioms, parse_input, get_initials_and_finals
 
 app = Flask(__name__)
-app.secret_key = os.getenv('SECRET_KEY', secrets.token_hex(16))  # 用于会话管理的密钥
-# 在生产环境中，建议使用固定的密钥并存储在环境变量中，以避免每次重启应用时生成新的密钥导致会话失效
-app.config['CACHE_TYPE'] = 'simple'
-cache = Cache(app)  # 使用简单内存缓存
+app.config.from_object(Config)
 
-IDIOM_FILE_PATH = os.getenv('IDIOM_FILE_PATH', 'data/idiom.json')
-PENDING_IDIOM_FILE_PATH = os.getenv('PENDING_IDIOM_FILE_PATH', 'data/pending_idiom.json')
-SECRET_PASSWORD = os.getenv('SECRET_PASSWORD', 'lsz20100')
+# 初始化缓存
+init_cache(app)
 
 # 配置日志
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=getattr(logging, Config.LOG_LEVEL))
 logger = logging.getLogger(__name__)
-
-def load_idioms(file_path):
-    if os.path.exists(file_path):
-        with open(file_path, 'r', encoding='utf-8') as file:
-            idioms = json.load(file)
-    else:
-        idioms = []
-    return idioms
-
-def save_idioms(idioms, file_path):
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(idioms, file, ensure_ascii=False, indent=4)
-
-# 预编译声母和韵母列表以提高性能
-INITIALS_LIST = ["zh", "ch", "sh", "b", "p", "m", "f", "d", "t", "n", "l", "g", "k", "h", "j", "q", "x", "r", "z", "c", "s", "y", "w"]
-FINALS_LIST = ["a", "o", "e", "i", "u", "ü", "ai", "ei", "ui", "ao", "ou", "iu", "ie", "ia", "v", "üe", "er", "an", "en", "in", "un", "ün", "ang", "eng",
-               "ing", "ong", "iao", "ian", "ia", "iang", "iong", "ua", "uo", "uai", "uan", "uang", "ueng", "ue"]
-
-# 创建声母映射以提高查找性能
-INITIALS_MAP = {}
-for initial in INITIALS_LIST:
-    INITIALS_MAP[initial] = initial
-
-
-def validate_pinyin_format(pinyin):
-    """验证拼音格式是否正确
-    
-    Args:
-        pinyin (str): 待验证的拼音字符串
-        
-    Returns:
-        bool: 拼音格式是否正确
-    """
-    if not pinyin:
-        return False
-    # 允许字母、üÜ和空格
-    return bool(re.match(r'^[a-zA-Z\u00fc\u00dc\s]+$', pinyin))
-
-def get_initials_and_finals(pinyin):
-    """优化的声母韵母分离函数
-    
-    Args:
-        pinyin (str): 拼音字符串
-        
-    Returns:
-        tuple: (声母, 韵母)
-    """
-    # 查找声母
-    initial = ''
-    # 先检查双字符声母
-    if len(pinyin) >= 2:
-        two_char = pinyin[:2]
-        if two_char in INITIALS_MAP:
-            initial = two_char
-    
-    # 如果没有找到双字符声母，检查单字符声母
-    if not initial and len(pinyin) >= 1:
-        one_char = pinyin[:1]
-        if one_char in INITIALS_MAP:
-            initial = one_char
-    
-    # 提取韵母
-    final = pinyin[len(initial):]
-    return initial, final
-
-def parse_input(input_str):
-    return re.split(r'[^a-zA-ZüÜ]+', input_str)
-
-@cache.memoize(timeout=60)  # 缓存搜索结果60秒
-def search_idioms(idioms, include_initials, include_finals, exclude_initials, exclude_finals,
-                  position_include_conditions, position_exclude_conditions):
-    """搜索符合条件的成语
-    
-    Args:
-        idioms (list): 成语列表
-        include_initials (set): 包含的声母集合
-        include_finals (set): 包含的韵母集合
-        exclude_initials (set): 排除的声母集合
-        exclude_finals (set): 排除的韵母集合
-        position_include_conditions (list): 位置包含条件列表
-        position_exclude_conditions (list): 位置排除条件列表
-        
-    Returns:
-        list: 符合条件的成语列表
-    """
-    result_idioms = []
-    for idiom in idioms:
-        if len(idiom['word']) != 4 or len(idiom['pinyin_r'].split()) != 4:
-            continue
-
-        pinyin_list = idiom['pinyin_r'].split()
-        initial_matches = [get_initials_and_finals(pinyin)[0] for pinyin in pinyin_list]
-        final_matches = [get_initials_and_finals(pinyin)[1] for pinyin in pinyin_list]
-
-        def matches_conditions(initials, finals, include_cond, exclude_cond):
-            include_initials, include_finals = include_cond
-            exclude_initials, exclude_finals = exclude_cond
-
-            return all(x in initials for x in include_initials) and \
-                   all(x in finals for x in include_finals) and \
-                   not any(x in initials for x in exclude_initials) and \
-                   not any(x in finals for x in exclude_finals)
-
-        if not matches_conditions(initial_matches, final_matches, (include_initials, include_finals), (exclude_initials, exclude_finals)):
-            continue
-
-        satisfies_position_conditions = True
-        for i in range(4):
-            if not matches_conditions([initial_matches[i]], [final_matches[i]], position_include_conditions[i], position_exclude_conditions[i]):
-                satisfies_position_conditions = False
-                break
-
-        if satisfies_position_conditions:
-            result_idioms.append({'word': idiom['word'], 'pinyin': idiom['pinyin_r'], 'weight': idiom['weight']})
-
-    result_idioms.sort(key=lambda x: x['weight'], reverse=True)
-    return result_idioms
 
 # 模板已移至templates目录下的独立文件中
 
@@ -148,8 +25,6 @@ def index():
 @app.route('/search', methods=['POST'])
 def search():
     try:
-        idioms = load_idioms(IDIOM_FILE_PATH)
-
         include_pinyin = parse_input(request.form.get('include_pinyin', ''))
         exclude_pinyin = parse_input(request.form.get('exclude_pinyin', ''))
 
@@ -203,7 +78,7 @@ def search():
             position_exclude_conditions.append((pe_initials, pe_finals))
 
         matched_idioms = search_idioms(
-            idioms, include_initials, include_finals,
+            include_initials, include_finals,
             exclude_initials, exclude_finals,
             position_include_conditions,
             position_exclude_conditions
@@ -212,10 +87,15 @@ def search():
         # 更新权重但限制频率
         if len(matched_idioms) < 5 and len(matched_idioms) > 0:
             for idiom in matched_idioms:
-                for orig_idiom in idioms:
-                    if orig_idiom['word'] == idiom['word']:
-                        orig_idiom['weight'] += 1
-            save_idioms(idioms, IDIOM_FILE_PATH)
+                # 从数据库获取当前成语
+                conn = get_db_connection()
+                c = conn.cursor()
+                c.execute('SELECT weight FROM idioms WHERE word = ?', (idiom['word'],))
+                result = c.fetchone()
+                if result:
+                    new_weight = result['weight'] + 1
+                    update_idiom_weight(idiom['word'], new_weight)
+                conn.close()
 
         if not matched_idioms:
             return render_template('index.html', idioms=[], error_message=None)
@@ -239,23 +119,20 @@ def add_idiom():
             return render_template('index.html', idioms=None, error_message="Error: 成语必须为四个字的长度")
 
         # 验证拼音格式（简单验证）
+        import re
         if not re.match(r'^[a-zA-ZüÜ\s]+$', new_pinyin):
             return render_template('index.html', idioms=None, error_message="Error: 拼音格式不正确")
 
-        current_idioms = load_idioms(IDIOM_FILE_PATH)
-        pending_idioms = load_idioms(PENDING_IDIOM_FILE_PATH)
-
-        for idiom in current_idioms + pending_idioms:
-            if idiom['word'] == new_idiom:
-                return render_template('index.html', idioms=None, error_message="Error: 成语已存在或在待审核列表中")
+        # 检查成语是否已存在
+        if check_idiom_exists(new_idiom):
+            return render_template('index.html', idioms=None, error_message="Error: 成语已存在或在待审核列表中")
 
         new_entry = {
             'word': new_idiom,
             'pinyin_r': new_pinyin,
             'weight': 0
         }
-        pending_idioms.append(new_entry)
-        save_idioms(pending_idioms, PENDING_IDIOM_FILE_PATH)
+        save_pending_idiom(new_entry)
 
         logger.info(f"新成语已添加至待审核列表: {new_idiom}")
         return render_template('index.html', idioms=None, error_message="成语已成功添加至待审核列表")
@@ -276,7 +153,7 @@ def review():
     if not session.get('authenticated', False):
         return render_template('review_login.html')
 
-    pending_idioms = load_idioms(PENDING_IDIOM_FILE_PATH)
+    pending_idioms = load_pending_idioms()
     return render_template('review.html', idioms=pending_idioms)
 
 @app.route('/process_idiom', methods=['POST'])
@@ -293,30 +170,52 @@ def process_idiom():
         logger.warning(f"无效的处理请求: action={action}, word={word}")
         return redirect(url_for('review'))
 
-    pending_idioms = load_idioms(PENDING_IDIOM_FILE_PATH)
-    current_idioms = load_idioms(IDIOM_FILE_PATH)
+    # 从数据库获取待审核成语
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT * FROM pending_idioms WHERE word = ?', (word,))
+    pending_idiom = c.fetchone()
+    conn.close()
+
+    if not pending_idiom:
+        logger.warning(f"尝试处理不存在的待审核成语: {word}")
+        return redirect(url_for('review'))
 
     if action == 'approve':
-        for idiom in pending_idioms:
-            if idiom['word'] == word:
-                current_idioms.append(idiom)
-                pending_idioms.remove(idiom)
-                save_idioms(current_idioms, IDIOM_FILE_PATH)
-                save_idioms(pending_idioms, PENDING_IDIOM_FILE_PATH)
-                logger.info(f"成语 '{word}' 已通过审核并添加到词库")
-                break
+        # 将待审核成语添加到正式成语表
+        idiom_dict = dict(pending_idiom)
+        save_idiom(idiom_dict)
+        # 从待审核表中删除
+        delete_pending_idiom(word)
+        logger.info(f"成语 '{word}' 已通过审核并添加到词库")
     elif action == 'reject':
-        original_length = len(pending_idioms)
-        pending_idioms = [idiom for idiom in pending_idioms if idiom['word'] != word]
-        if len(pending_idioms) < original_length:
-            save_idioms(pending_idioms, PENDING_IDIOM_FILE_PATH)
-            logger.info(f"成语 '{word}' 已被拒绝")
-        else:
-            logger.warning(f"尝试拒绝不存在的成语: {word}")
+        # 从待审核表中删除
+        delete_pending_idiom(word)
+        logger.info(f"成语 '{word}' 已被拒绝")
 
     return redirect(url_for('review'))
 
+@app.route('/api/idiom/<word>', methods=['GET'])
+def get_idiom_info(word):
+    """获取成语详情API"""
+    try:
+        idiom_detail = get_idiom_detail(word)
+        if idiom_detail:
+            return jsonify({
+                'success': True,
+                'data': idiom_detail
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': '成语不存在'
+            }), 404
+    except Exception as e:
+        logger.error(f"获取成语详情时发生错误: {str(e)}")
+        return jsonify({
+            'success': False,
+            'message': '系统错误，请稍后重试'
+        }), 500
+
 if __name__ == '__main__':
-    # 仅在非生产环境中启用调试模式
-    debug_mode = os.environ.get('FLASK_ENV') != 'production'
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8666)), debug=debug_mode)
+    app.run(host='0.0.0.0', port=Config.PORT, debug=Config.DEBUG)

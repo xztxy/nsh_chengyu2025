@@ -5,40 +5,172 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>成语审核界面</title>
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4a6fa5;
+      --secondary-color: #6c757d;
+      --accent-color: #f8b400;
+      --light-color: #f8f9fa;
+      --dark-color: #343a40;
+      --success-color: #28a745;
+      --danger-color: #dc3545;
+      --border-radius: 8px;
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: 'Microsoft YaHei', 'Arial', sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+
+    .card {
+      border: none;
+      border-radius: var(--border-radius);
+      box-shadow: var(--box-shadow);
+      overflow: hidden;
+      margin-bottom: 20px;
+      transition: var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    .card-header {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 15px 20px;
+      font-weight: bold;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    .btn {
+      border-radius: var(--border-radius);
+      padding: 8px 16px;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      border: none;
+    }
+
+    .btn-success:hover {
+      background-color: #218838;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background-color: var(--danger-color);
+      border: none;
+    }
+
+    .btn-danger:hover {
+      background-color: #c82333;
+      transform: translateY(-2px);
+    }
+
+    .table {
+      border-radius: var(--border-radius);
+      overflow: hidden;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+      color: var(--dark-color);
+    }
+
+    .table tbody tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .alert {
+      border-radius: var(--border-radius);
+      margin-top: 15px;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 10px;
+      }
+
+      .card-body {
+        padding: 15px;
+      }
+
+      .btn {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div class="container mt-5">
-    <h1>待审核的成语</h1>
-    {% if idioms %}
-    <div class="table-responsive">
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>成语</th>
-            <th>拼音</th>
-            <th>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for idiom in idioms %}
-          <tr>
-            <td><strong>{{ idiom.word }}</strong></td>
-            <td>{{ idiom.pinyin_r }}</td>
-            <td>
-              <form method="post" action="/process_idiom" style="display: inline;">
-                <input type="hidden" name="word" value="{{ idiom.word }}">
-                <button type="submit" name="action" value="approve" class="btn btn-sm btn-success">通过</button>
-                <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger">拒绝</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+  <div class="container">
+    <div class="card fade-in">
+      <div class="card-header">
+        <h1 class="mb-0"><i class="fas fa-tasks"></i> 成语审核</h1>
+      </div>
+      <div class="card-body">
+        {% if idioms %}
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>成语</th>
+                <th>拼音</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for idiom in idioms %}
+              <tr>
+                <td><strong>{{ idiom.word }}</strong></td>
+                <td>{{ idiom.pinyin_r }}</td>
+                <td>
+                  <form method="post" action="/process_idiom" style="display: inline;">
+                    <input type="hidden" name="word" value="{{ idiom.word }}">
+                    <button type="submit" name="action" value="approve" class="btn btn-sm btn-success"><i class="fas fa-check"></i> 通过</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-sm btn-danger"><i class="fas fa-times"></i> 拒绝</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info"><i class="fas fa-info-circle"></i> 没有待审核的成语。</div>
+        {% endif %}
+      </div>
     </div>
-    {% else %}
-    <div class="alert alert-info mt-4">没有待审核的成语。</div>
-    {% endif %}
   </div>
 </body>
 </html>
