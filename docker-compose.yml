@@ -14,7 +14,7 @@ volumes:
 # 定义服务
 services:
   nsh-chengyu:
-    image: ${DOCKERHUB_USERNAME}/nsh-chengyu:latest
+    image: mdespot/nsh-chengyu:latest
     pull_policy: always
     ports:
       - "8666:8666"
@@ -35,11 +35,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 5s
-    deploy:
-      resources:
-        limits:
-          cpus: "0.5"
-          memory: "512M"
-        reservations:
-          cpus: "0.25"
-          memory: "256M"
