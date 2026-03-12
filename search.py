@@ -61,12 +61,17 @@ def parse_input(input_str):
 # 初始化缓存
 cache = None
 
-def init_cache(app):
+def init_cache(app, app_cache=None):
     """初始化缓存"""
     global cache
-    cache = Cache(app)
+    if app_cache:
+        cache = app_cache
+    else:
+        cache = Cache(app)
+    # 初始化缓存后应用装饰器
+    global search_idioms
+    search_idioms = cache.memoize(timeout=60)(search_idioms)
 
-@cache.memoize(timeout=60)  # 缓存搜索结果60秒
 def search_idioms(include_initials, include_finals, exclude_initials, exclude_finals,
                   position_include_conditions, position_exclude_conditions):
     """搜索符合条件的成语

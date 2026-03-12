@@ -1,4 +1,5 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
+from flask_caching import Cache
 import logging
 import hashlib
 from config import Config
@@ -8,8 +9,8 @@ from search import init_cache, search_idioms, parse_input, get_initials_and_fina
 app = Flask(__name__)
 app.config.from_object(Config)
 
-# 初始化缓存
-init_cache(app)
+# 创建缓存对象
+cache = Cache()
 
 # 配置日志
 logging.basicConfig(level=getattr(logging, Config.LOG_LEVEL))
@@ -17,10 +18,17 @@ logger = logging.getLogger(__name__)
 
 # 模板已移至templates目录下的独立文件中
 
-@app.route('/', methods=['GET'])
-@cache.cached(timeout=300)  # 缓存主页五分钟
 def index():
     return render_template('index.html', idioms=None, error_message=None)
+
+# 初始化缓存
+init_cache(app, cache)
+
+# 应用缓存装饰器
+index = cache.cached(timeout=300)(index)
+
+# 注册路由
+app.route('/', methods=['GET'])(index)
 
 @app.route('/search', methods=['POST'])
 def search():
