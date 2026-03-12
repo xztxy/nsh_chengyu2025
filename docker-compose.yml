@@ -14,9 +14,8 @@ volumes:
 # 定义服务
 services:
   nsh-chengyu:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    image: ${DOCKERHUB_USERNAME}/nsh-chengyu:latest
+    pull_policy: always
     ports:
       - "8666:8666"
     environment:

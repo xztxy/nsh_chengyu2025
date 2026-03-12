@@ -33,3 +33,11 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Deploy with Docker Compose
+        run: |
+          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+          echo "DOCKERHUB_TOKEN=${{ secrets.DOCKERHUB_TOKEN }}" >> .env
+          echo "SECRET_KEY=$(openssl rand -hex 16)" >> .env
+          docker-compose pull
+          docker-compose up -d
