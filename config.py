@@ -12,9 +12,6 @@ class Config:
     # 管理员密码
     SECRET_PASSWORD = os.getenv('SECRET_PASSWORD', 'lsz20100')
     
-    # 缓存配置
-    CACHE_TYPE = 'simple'
-    
     # 日志配置
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
     

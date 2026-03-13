@@ -12,9 +12,6 @@ app.config.from_object(Config)
 logging.basicConfig(level=getattr(logging, Config.LOG_LEVEL))
 logger = logging.getLogger(__name__)
 
-# 禁用缓存以避免初始化问题
-# 移除缓存装饰器和初始化代码
-
 # 模板已移至templates目录下的独立文件中
 
 @app.route('/', methods=['GET'])
@@ -144,7 +141,7 @@ def review():
     if request.method == 'POST':
         password = request.form.get('password', '').strip()
         # 使用hash比较提高安全性
-        if hashlib.sha256(password.encode()).hexdigest() == hashlib.sha256(SECRET_PASSWORD.encode()).hexdigest():
+        if hashlib.sha256(password.encode()).hexdigest() == hashlib.sha256(Config.SECRET_PASSWORD.encode()).hexdigest():
             session['authenticated'] = True
             logger.info("管理员已登录审核界面")
             return redirect(url_for('review'))
