@@ -28,14 +28,8 @@ jobs:
           context: .
           push: true
           tags: |
-            mdespot/nsh-chengyu:latest
-            mdespot/nsh-chengyu:${{ github.sha }}
-            mdespot/nsh-chengyu:${{ github.ref_name }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:${{ github.sha }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Deploy with Docker Compose
-        run: |
-          echo "SECRET_KEY=$(openssl rand -hex 16)" > .env
-          docker-compose pull
-          docker-compose up -d

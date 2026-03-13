@@ -35,6 +35,9 @@ RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
 # 复制项目代码
 COPY . .
 
+# 初始化数据库
+RUN python migrate_to_sqlite.py && python create_inverted_index.py
+
 # 更改文件所有者
 RUN chown -R 1000:appgroup /app
 

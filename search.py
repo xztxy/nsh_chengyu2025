@@ -61,18 +61,8 @@ def parse_input(input_str):
 # 初始化缓存
 cache = None
 
-def init_cache(app, app_cache=None):
-    """初始化缓存"""
-    global cache
-    if app_cache:
-        cache = app_cache
-    else:
-        cache = Cache(app)
-    # 初始化缓存后应用装饰器
-    global search_idioms
-    search_idioms = cache.memoize(timeout=60)(search_idioms)
-
-def search_idioms(include_initials, include_finals, exclude_initials, exclude_finals,
+# 定义原始搜索函数
+def _search_idioms(include_initials, include_finals, exclude_initials, exclude_finals,
                   position_include_conditions, position_exclude_conditions):
     """搜索符合条件的成语
     
@@ -206,3 +196,37 @@ def search_idioms(include_initials, include_finals, exclude_initials, exclude_fi
     # 按权重排序
     result_idioms.sort(key=lambda x: x['weight'], reverse=True)
     return result_idioms
+
+# 暴露的搜索函数
+search_idioms = None
+
+def search_idioms(include_initials, include_finals, exclude_initials, exclude_finals,
+                  position_include_conditions, position_exclude_conditions):
+    """搜索符合条件的成语（带缓存支持）
+    
+    Args:
+        include_initials (set): 包含的声母集合
+        include_finals (set): 包含的韵母集合
+        exclude_initials (set): 排除的声母集合
+        exclude_finals (set): 排除的韵母集合
+        position_include_conditions (list): 位置包含条件列表
+        position_exclude_conditions (list): 位置排除条件列表
+        
+    Returns:
+        list: 符合条件的成语列表
+    """
+    # 直接调用原始函数
+    return _search_idioms(include_initials, include_finals, exclude_initials, exclude_finals,
+                         position_include_conditions, position_exclude_conditions)
+
+def init_cache(app):
+    """初始化缓存"""
+    global cache
+    from flask_caching import Cache
+    cache = Cache(app)
+    # 初始化缓存后包装搜索函数
+    global search_idioms
+    # 保存原始函数的引用
+    original_search = search_idioms
+    # 包装函数并赋值回search_idioms
+    search_idioms = cache.memoize(timeout=60)(_search_idioms)
