@@ -31,5 +31,6 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:${{ github.sha }}
             ${{ secrets.DOCKERHUB_USERNAME }}/nsh-chengyu:${{ github.ref_name }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # 禁用缓存以确保使用最新代码
+          # cache-from: type=gha
+          # cache-to: type=gha,mode=max
