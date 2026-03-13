@@ -1,79 +1,120 @@
-# nsh_chengyu - 逆水寒成语查询工具
+# 成语搜索项目 (Node.js Express 版本)
 
-这是一个为《逆水寒》枫林解语活动设计的成语查询工具，支持根据拼音声母和韵母条件查询成语。
+## 项目功能
 
-## 功能特点
-
-- 根据拼音声母和韵母条件查询成语
-- 支持精确位置查询（第几个字的声母或韵母）
-- 成语权重机制，根据使用频率调整排序
-- 添加新成语功能（需审核）
-- 响应式Web界面，支持移动设备
-- 缓存优化，提高查询性能
+1. **成语搜索**：根据拼音、声母、韵母等条件搜索成语
+2. **成语添加**：用户可以添加新成语，需要审核
+3. **成语审核**：管理员可以审核用户添加的成语
+4. **成语详情API**：提供成语详情的API接口
 
 ## 项目结构
 
-- `app.py`: 主应用文件，包含所有后端逻辑
-- `data/idiom.json`: 成语数据文件
-- `data/pending_idiom.json`: 待审核成语文件
-- `templates/`: HTML模板文件目录
-  - `index.html`: 主界面
-  - `review_login.html`: 审核登录界面
-  - `review.html`: 成语审核界面
-- `requirements.txt`: Python依赖文件
-- `Dockerfile`: Docker镜像配置
-- `docker-compose.yml`: Docker部署配置
+```
+├── app.js              # 应用入口
+├── package.json        # 依赖管理
+├── package-lock.json   # 依赖版本锁定
+├── Dockerfile          # Docker构建文件
+├── docker-compose.yml  # Docker Compose配置
+├── config/             # 配置文件
+│   └── config.js       # 应用配置
+├── routes/             # 路由
+│   ├── index.js        # 路由入口
+│   ├── search.js       # 搜索相关路由
+│   ├── add.js          # 添加成语路由
+│   ├── review.js       # 审核相关路由
+│   └── api.js          # API接口路由
+├── controllers/        # 控制器
+│   ├── searchController.js    # 搜索控制器
+│   ├── addController.js       # 添加成语控制器
+│   ├── reviewController.js    # 审核控制器
+│   └── apiController.js       # API控制器
+├── services/           # 服务
+│   ├── searchService.js       # 搜索服务
+│   ├── idiomService.js        # 成语服务
+│   └── reviewService.js       # 审核服务
+├── models/             # 数据模型
+│   ├── idiom.js        # 成语模型
+│   ├── pendingIdiom.js # 待审核成语模型
+│   └── invertedIndex.js # 倒排索引模型
+├── utils/              # 工具函数
+│   ├── pinyinUtils.js  # 拼音处理工具
+│   └── dbUtils.js      # 数据库工具
+├── templates/          # 模板文件
+│   ├── index.html      # 首页模板
+│   ├── review_login.html # 审核登录模板
+│   └── review.html     # 审核页面模板
+└── data/               # 数据文件
+    └── idioms.db       # SQLite数据库文件
+```
 
-## 安装和运行
+## 技术栈
 
-### 方法1：直接运行
+- **后端**：Node.js, Express
+- **数据库**：SQLite
+- **模板引擎**：EJS
+- **部署**：Docker, Docker Compose
 
-1. 安装依赖：
+## 核心功能实现
+
+### 1. 成语搜索
+
+- 支持根据拼音、声母、韵母等条件搜索
+- 支持位置条件搜索（每个字的位置可以设置不同的条件）
+- 使用倒排索引提高搜索性能
+
+### 2. 成语添加和审核
+
+- 用户可以添加新成语，需要填写成语和拼音
+- 管理员可以审核用户添加的成语，决定是否通过
+- 审核通过的成语会添加到正式成语库
+
+### 3. 成语详情API
+
+- 提供RESTful API接口，获取成语详情
+- 支持JSON格式返回数据
+
+## 部署方式
+
+### Docker构建和运行
+
+1. 构建Docker镜像：
+   ```bash
+   docker build -t mdespot/nsh-chengyu:latest .
    ```
-   pip install -r requirements.txt
-   ```
 
-2. 设置环境变量（可选）：
-   ```
-   export SECRET_KEY="your_secret_key"
-   export SECRET_PASSWORD="your_admin_password"
-   ```
-
-3. 运行应用：
-   ```
-   python app.py
-   ```
-
-4. 访问 `http://localhost:8666`
-
-### 方法2：使用Docker
-
-1. 构建并启动容器：
-   ```
+2. 运行Docker容器：
+   ```bash
    docker-compose up -d
    ```
 
-2. 访问 `http://localhost:8666`
+3. 访问应用：
+   ```
+   http://localhost:8666
+   ```
 
-## 使用说明
+## API文档
 
-1. 在主界面输入声母和韵母条件进行查询
-2. 点击"添加成语"可提交新成语（需管理员审核）
-3. 管理员可通过 `/review` 路径审核新成语
+### 获取成语详情
 
-## 安全性
-
-- 管理员密码通过SHA256哈希比较验证
-- 使用环境变量管理密钥和密码
-- 审核功能具有会话保护
-
-## 优化建议
-
-1. 使用数据库替代JSON文件存储，提高并发性能
-2. 添加成语释义和出处信息
-3. 实现拼音模糊匹配功能
-4. 增加用户收藏功能
-5. 添加搜索历史记录
-6. 添加应用性能监控工具，如Prometheus指标导出
-7. 实现更完善的错误处理机制，为不同类型的异常提供更具体的错误页面或日志记录
-8. 为代码添加更详细的注释，特别是拼音解析和权重更新逻辑
+- **URL**：`/api/idiom/:word`
+- **Method**：GET
+- **参数**：
+  - `word`：成语
+- **返回**：
+  ```json
+  {
+    "success": true,
+    "data": {
+      "word": "成语",
+      "pinyin": "chéng yǔ",
+      "pinyin_r": "cheng yu",
+      "derivation": "成语的来源",
+      "example": "成语的例子",
+      "explanation": "成语的解释",
+      "abbreviation": "cy",
+      "first": "c",
+      "last": "u",
+      "weight": 1
+    }
+  }
+  ```

@@ -21,11 +21,11 @@ services:
       - "8666:8666"
     # 环境变量
     environment:
-      - FLASK_ENV=production
+      - NODE_ENV=production
       - PORT=8666
       - SECRET_KEY=${SECRET_KEY:-default_secret_key}
       - SECRET_PASSWORD=${SECRET_PASSWORD:-lsz20100}
-      - DB_PATH=idioms.db
+      - DB_PATH=/app/data/idioms.db
     # 拉取策略
     pull_policy: always
     # 网络配置
@@ -40,7 +40,7 @@ services:
       start_period: 5s
     # 数据卷
     volumes:
-      - nsh-chengyu-db:/app
+      - nsh-chengyu-db:/app/data
     # 重启策略
     restart: unless-stopped
     # 资源限制

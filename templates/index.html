@@ -1,526 +1,185 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>枫林解语成语查询</title>
-  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <style>
-    :root {
-      --primary-color: #4a6fa5;
-      --secondary-color: #6c757d;
-      --accent-color: #f8b400;
-      --light-color: #f8f9fa;
-      --dark-color: #343a40;
-      --success-color: #28a745;
-      --danger-color: #dc3545;
-      --border-radius: 8px;
-      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      --transition: all 0.3s ease;
-    }
-
-    body {
-      font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-      background-color: #f0f2f5;
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-    }
-
-    .card {
-      border: none;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      overflow: hidden;
-      margin-bottom: 20px;
-      transition: var(--transition);
-    }
-
-    .card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    }
-
-    .card-header {
-      background-color: var(--primary-color);
-      color: white;
-      padding: 15px 20px;
-      font-weight: bold;
-    }
-
-    .card-body {
-      padding: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    .form-label {
-      font-weight: 600;
-      color: var(--dark-color);
-    }
-
-    .form-control {
-      border-radius: var(--border-radius);
-      border: 1px solid #ced4da;
-      padding: 10px 15px;
-      transition: var(--transition);
-    }
-
-    .form-control:focus {
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 0.2rem rgba(74, 111, 165, 0.25);
-    }
-
-    .btn {
-      border-radius: var(--border-radius);
-      padding: 10px 20px;
-      font-weight: 600;
-      transition: var(--transition);
-    }
-
-    .btn-primary {
-      background-color: var(--primary-color);
-      border: none;
-    }
-
-    .btn-primary:hover {
-      background-color: #3a5a85;
-      transform: translateY(-2px);
-    }
-
-    .btn-success {
-      background-color: var(--success-color);
-      border: none;
-    }
-
-    .btn-success:hover {
-      background-color: #218838;
-      transform: translateY(-2px);
-    }
-
-    .btn-danger {
-      background-color: var(--danger-color);
-      border: none;
-    }
-
-    .btn-danger:hover {
-      background-color: #c82333;
-      transform: translateY(-2px);
-    }
-
-    .btn-secondary {
-      background-color: var(--secondary-color);
-      border: none;
-    }
-
-    .btn-secondary:hover {
-      background-color: #5a6268;
-      transform: translateY(-2px);
-    }
-
-    .alert {
-      border-radius: var(--border-radius);
-      margin-top: 15px;
-    }
-
-    .result-section {
-      max-height: 50vh;
-      overflow-y: auto;
-    }
-
-    .idiom-card {
-      background-color: #f8f9fa;
-      border: 1px solid #e9ecef;
-      border-radius: var(--border-radius);
-      padding: 15px;
-      margin-bottom: 10px;
-      transition: var(--transition);
-      cursor: pointer;
-    }
-
-    .idiom-card:hover {
-      background-color: #e9ecef;
-      transform: translateX(5px);
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .idiom-action {
-      font-size: 0.8rem;
-      color: var(--primary-color);
-      margin-top: 5px;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .idiom-action:hover {
-      text-decoration: underline;
-    }
-
-    .idiom-word {
-      font-size: 1.2rem;
-      font-weight: bold;
-      color: var(--primary-color);
-    }
-
-    .idiom-pinyin {
-      color: var(--secondary-color);
-      font-style: italic;
-    }
-
-    .idiom-weight {
-      font-size: 0.9rem;
-      color: var(--secondary-color);
-    }
-
-    .instructions {
-      background-color: #e3f2fd;
-      border-left: 4px solid var(--primary-color);
-      padding: 15px;
-      border-radius: 0 var(--border-radius) var(--border-radius) 0;
-      margin-bottom: 20px;
-    }
-
-    .instructions h4 {
-      color: var(--primary-color);
-      margin-top: 0;
-    }
-
-    .instructions ul {
-      margin-bottom: 0;
-    }
-
-    .add-idiom-form {
-      background-color: #f3e5f5;
-      border-radius: var(--border-radius);
-      padding: 20px;
-      margin-top: 20px;
-    }
-
-    .add-idiom-form h4 {
-      color: #7b1fa2;
-      margin-bottom: 15px;
-    }
-
-    @media (max-width: 768px) {
-      .container {
-        margin: 10px;
-      }
-
-      .card-body {
-        padding: 15px;
-      }
-
-      .btn {
-        width: 100%;
-        margin-bottom: 10px;
-      }
-
-      .result-section {
-        max-height: 40vh;
-      }
-    }
-
-    .fade-in {
-      animation: fadeIn 0.5s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .search-suggestions {
-      position: absolute;
-      z-index: 1000;
-      background-color: white;
-      border: 1px solid #ced4da;
-      border-radius: 0 0 var(--border-radius) var(--border-radius);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      max-height: 200px;
-      overflow-y: auto;
-      width: calc(100% - 30px);
-      left: 15px;
-      top: 100%;
-    }
-
-    .suggestion-item {
-      padding: 10px 15px;
-      cursor: pointer;
-      transition: var(--transition);
-    }
-
-    .suggestion-item:hover {
-      background-color: #f8f9fa;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语搜索</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .position-conditions {
+            margin-top: 20px;
+        }
+        .position-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .position-item {
+            flex: 1;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .idioms-result {
+            margin-top: 20px;
+        }
+        .idiom-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .idiom-word {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .idiom-pinyin {
+            color: #666;
+            margin-left: 10px;
+        }
+        .error-message {
+            color: red;
+            margin: 10px 0;
+        }
+        .add-idiom {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card fade-in">
-      <div class="card-header">
-        <h1 class="mb-0"><i class="fas fa-search"></i> 逆水寒枫林解语成语查询</h1>
-      </div>
-      <div class="card-body">
-        <div class="instructions">
-          <h4><i class="fas fa-info-circle"></i> 使用说明</h4>
-          <p>输入您希望包含或者排除的拼音声母和韵母，可以使用任意符号分隔多个拼音条件。您还可以指定每个字的位置条件查询成语。</p>
-          <h4><i class="fas fa-history"></i> 更新内容</h4>
-          <ul>
-            <li>优化了成语查询算法，提升效率。</li>
-            <li>页面布局调整，使用更清晰的表单结构来提高用户体验。</li>
-            <li>只区分包含和排除，无需单独输入。</li>
-            <li>增加条件检查，当条件冲突提示冲突的条件。</li>
-          </ul>
-        </div>
-
-        <form method="post" action="/search" id="idiomSearchForm">
-          <div class="form-group">
-            <label for="include_pinyin" class="form-label">包含的声母和韵母:</label>
-            <div class="position-relative">
-              <input type="text" class="form-control" name="include_pinyin" id="include_pinyin" placeholder="例如: z sh ang" value="{{ request.form.get('include_pinyin', '') }}">
-              <div class="search-suggestions" id="include_suggestions"></div>
+    <h1>成语搜索</h1>
+    <div class="container">
+        <!-- 搜索表单 -->
+        <form action="/search" method="post" class="search-form">
+            <div class="form-group">
+                <label for="include_pinyin">包含拼音</label>
+                <input type="text" id="include_pinyin" name="include_pinyin" placeholder="例如：zh ch sh">
             </div>
-          </div>
-          <div class="form-group">
-            <label for="exclude_pinyin" class="form-label">排除的声母和韵母:</label>
-            <div class="position-relative">
-              <input type="text" class="form-control" name="exclude_pinyin" id="exclude_pinyin" placeholder="例如: b p" value="{{ request.form.get('exclude_pinyin', '') }}">
-              <div class="search-suggestions" id="exclude_suggestions"></div>
+            <div class="form-group">
+                <label for="exclude_pinyin">排除拼音</label>
+                <input type="text" id="exclude_pinyin" name="exclude_pinyin" placeholder="例如：z c s">
             </div>
-          </div>
-
-          {% for i in range(4) %}
-          <div class="form-row">
-            <div class="col">
-              <label for="position{{ i }}_include" class="form-label">第{{ i+1 }}个字包含:</label>
-              <input type="text" class="form-control" name="position{{ i }}_include" placeholder="例如: zh ang" value="{{ request.form.get('position' ~ i ~ '_include', '') }}">
-            </div>
-            <div class="col">
-              <label for="position{{ i }}_exclude" class="form-label">第{{ i+1 }}个字排除:</label>
-              <input type="text" class="form-control" name="position{{ i }}_exclude" placeholder="例如: b p" value="{{ request.form.get('position' ~ i ~ '_exclude', '') }}">
-            </div>
-          </div>
-          {% endfor %}
-
-          <div class="form-row mt-4">
-            <div class="col">
-              <button type="submit" class="btn btn-primary btn-block"><i class="fas fa-search"></i> 查询</button>
-            </div>
-            <div class="col">
-              <button type="button" class="btn btn-secondary btn-block" onclick="resetForm()"><i class="fas fa-times"></i> 清除</button>
-            </div>
-          </div>
         </form>
 
-        {% if error_message %}
-        <div class="alert alert-danger mt-4"><i class="fas fa-exclamation-circle"></i> {{ error_message }}</div>
-        {% endif %}
-
-        <div class="add-idiom-form">
-          <h4><i class="fas fa-plus-circle"></i> 添加成语</h4>
-          <form method="post" action="/add_idiom">
-            <div class="form-row">
-              <div class="col">
-                <div class="form-group">
-                  <label for="new_idiom" class="form-label">成语:</label>
-                  <input type="text" class="form-control" name="new_idiom" id="new_idiom" placeholder="请输入四字成语" required>
+        <!-- 位置条件 -->
+        <div class="position-conditions">
+            <h3>位置条件</h3>
+            <div class="position-row">
+                <div class="position-item">
+                    <label>第一个字</label>
+                    <input type="text" name="position0_include" placeholder="包含">
+                    <input type="text" name="position0_exclude" placeholder="排除">
                 </div>
-              </div>
-              <div class="col">
-                <div class="form-group">
-                  <label for="new_pinyin" class="form-label">拼音:</label>
-                  <input type="text" class="form-control" name="new_pinyin" id="new_pinyin" placeholder="例如: ce shi cheng yu" required>
+                <div class="position-item">
+                    <label>第二个字</label>
+                    <input type="text" name="position1_include" placeholder="包含">
+                    <input type="text" name="position1_exclude" placeholder="排除">
                 </div>
-              </div>
+                <div class="position-item">
+                    <label>第三个字</label>
+                    <input type="text" name="position2_include" placeholder="包含">
+                    <input type="text" name="position2_exclude" placeholder="排除">
+                </div>
+                <div class="position-item">
+                    <label>第四个字</label>
+                    <input type="text" name="position3_include" placeholder="包含">
+                    <input type="text" name="position3_exclude" placeholder="排除">
+                </div>
             </div>
-            <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> 添加到待审核</button>
-          </form>
         </div>
-      </div>
+
+        <!-- 搜索按钮 -->
+        <div class="button-group">
+            <button type="submit">搜索</button>
+        </div>
+    </form>
+
+    <!-- 错误信息 -->
+    {% if error_message %}
+    <div class="error-message">{{ error_message }}</div>
+    {% endif %}
+
+    <!-- 搜索结果 -->
+    {% if idioms %}
+    <div class="idioms-result">
+        <h3>搜索结果</h3>
+        {% for idiom in idioms %}
+        <div class="idiom-item">
+            <span class="idiom-word">{{ idiom.word }}</span>
+            <span class="idiom-pinyin">{{ idiom.pinyin }}</span>
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
 
-    <div class="card fade-in">
-      <div class="card-header">
-        <h2 class="mb-0"><i class="fas fa-list"></i> 搜索结果</h2>
-      </div>
-      <div class="card-body result-section">
-        {% if idioms %}
-        <div class="mb-3">
-          <span class="badge badge-primary">{{ idioms|length }} 个结果</span>
-        </div>
-        <div class="idiom-list">
-          {% for item in idioms %}
-          <div class="idiom-card" onclick="showIdiomDetail('{{ item.word }}')">
-            <div class="idiom-word">{{ item.word }}</div>
-            <div class="idiom-pinyin">{{ item.pinyin }}</div>
-            <div class="idiom-weight">权重: {{ item.weight }}</div>
-            <div class="idiom-action"><i class="fas fa-info-circle"></i> 查看详情</div>
-          </div>
-          {% endfor %}
-        </div>
-        {% elif idioms is not none %}
-        <div class="alert alert-info"><i class="fas fa-info-circle"></i> 没有满足条件的成语。</div>
-        {% endif %}
-
-        <!-- 成语详情模态框 -->
-        <div class="modal fade" id="idiomDetailModal" tabindex="-1" role="dialog" aria-labelledby="idiomDetailModalLabel" aria-hidden="true">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="idiomDetailModalLabel">成语详情</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div id="idiomDetailContent">
-                  <div class="text-center">
-                    <div class="spinner-border" role="status">
-                      <span class="sr-only">加载中...</span>
-                    </div>
-                    <p class="mt-2">正在加载成语详情...</p>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
-              </div>
+    <!-- 添加成语 -->
+    <div class="add-idiom">
+        <h3>添加成语</h3>
+        <form action="/add_idiom" method="post">
+            <div class="form-group">
+                <label for="new_idiom">成语</label>
+                <input type="text" id="new_idiom" name="new_idiom" placeholder="例如：一心一意">
             </div>
-          </div>
-        </div>
-      </div>
+            <div class="form-group">
+                <label for="new_pinyin">拼音</label>
+                <input type="text" id="new_pinyin" name="new_pinyin" placeholder="例如：yi xin yi yi">
+            </div>
+            <div class="button-group">
+                <button type="submit">添加</button>
+            </div>
+        </form>
     </div>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-  <script>
-    function resetForm() {
-      document.getElementById('idiomSearchForm').reset();
-      const inputs = document.querySelectorAll('#idiomSearchForm input');
-      inputs.forEach(input => input.value = '');
-    }
-
-    // 实时搜索建议
-    document.getElementById('include_pinyin').addEventListener('input', function(e) {
-      const value = e.target.value;
-      const suggestions = document.getElementById('include_suggestions');
-      if (value.length > 1) {
-        // 这里可以添加AJAX请求获取建议
-        suggestions.style.display = 'block';
-        suggestions.innerHTML = '<div class="suggestion-item">加载中...</div>';
-        // 模拟建议
-        setTimeout(() => {
-          suggestions.innerHTML = '';
-          const mockSuggestions = ['z', 'zh', 'sh', 'ang', 'eng'];
-          mockSuggestions.forEach(item => {
-            if (item.startsWith(value.toLowerCase())) {
-              const div = document.createElement('div');
-              div.className = 'suggestion-item';
-              div.textContent = item;
-              div.onclick = () => {
-                e.target.value = item;
-                suggestions.style.display = 'none';
-              };
-              suggestions.appendChild(div);
-            }
-          });
-        }, 300);
-      } else {
-        suggestions.style.display = 'none';
-      }
-    });
-
-    // 点击其他地方关闭建议
-    document.addEventListener('click', function(e) {
-      const includeInput = document.getElementById('include_pinyin');
-      const includeSuggestions = document.getElementById('include_suggestions');
-      const excludeInput = document.getElementById('exclude_pinyin');
-      const excludeSuggestions = document.getElementById('exclude_suggestions');
-
-      if (!includeInput.contains(e.target) && !includeSuggestions.contains(e.target)) {
-        includeSuggestions.style.display = 'none';
-      }
-      if (!excludeInput.contains(e.target) && !excludeSuggestions.contains(e.target)) {
-        excludeSuggestions.style.display = 'none';
-      }
-    });
-
-    // 显示成语详情
-    function showIdiomDetail(word) {
-      const modal = $('#idiomDetailModal');
-      const content = document.getElementById('idiomDetailContent');
-      
-      // 显示加载状态
-      content.innerHTML = `
-        <div class="text-center">
-          <div class="spinner-border" role="status">
-            <span class="sr-only">加载中...</span>
-          </div>
-          <p class="mt-2">正在加载成语详情...</p>
-        </div>
-      `;
-      
-      // 打开模态框
-      modal.modal('show');
-      
-      // 请求成语详情
-      fetch(`/api/idiom/${encodeURIComponent(word)}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            const idiom = data.data;
-            content.innerHTML = `
-              <div class="idiom-detail">
-                <h3 class="text-center mb-4">${idiom.word}</h3>
-                <div class="row">
-                  <div class="col-md-6">
-                    <p><strong>拼音:</strong> ${idiom.pinyin}</p>
-                    <p><strong>缩写:</strong> ${idiom.abbreviation || '-'}</p>
-                    <p><strong>首字拼音:</strong> ${idiom.first || '-'}</p>
-                    <p><strong>末字拼音:</strong> ${idiom.last || '-'}</p>
-                    <p><strong>权重:</strong> ${idiom.weight}</p>
-                  </div>
-                  <div class="col-md-6">
-                    <p><strong>解释:</strong> ${idiom.explanation || '-'}</p>
-                  </div>
-                </div>
-                <div class="mt-4">
-                  <p><strong>出处:</strong> ${idiom.derivation || '-'}</p>
-                </div>
-                <div class="mt-2">
-                  <p><strong>示例:</strong> ${idiom.example || '-'}</p>
-                </div>
-              </div>
-            `;
-          } else {
-            content.innerHTML = `
-              <div class="alert alert-danger text-center">
-                <i class="fas fa-exclamation-circle"></i> ${data.message}
-              </div>
-            `;
-          }
-        })
-        .catch(error => {
-          console.error('获取成语详情失败:', error);
-          content.innerHTML = `
-            <div class="alert alert-danger text-center">
-              <i class="fas fa-exclamation-circle"></i> 加载失败，请稍后重试
-            </div>
-          `;
-        });
-    }
-  </script>
+    </div>
 </body>
 </html>
