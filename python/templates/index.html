@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成语搜索</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .search-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .position-conditions {
+            margin-top: 20px;
+        }
+        .position-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .position-item {
+            flex: 1;
+        }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .idioms-result {
+            margin-top: 20px;
+        }
+        .idiom-item {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .idiom-word {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .idiom-pinyin {
+            color: #666;
+            margin-left: 10px;
+        }
+        .error-message {
+            color: red;
+            margin: 10px 0;
+        }
+        .add-idiom {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>成语搜索</h1>
+    <div class="container">
+        <!-- 搜索表单 -->
+        <form action="/search" method="post" class="search-form">
+            <div class="form-group">
+                <label for="include_pinyin">包含拼音</label>
+                <input type="text" id="include_pinyin" name="include_pinyin" placeholder="例如：zh ch sh">
+            </div>
+            <div class="form-group">
