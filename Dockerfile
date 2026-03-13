@@ -35,6 +35,9 @@ RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
 # 复制项目代码
 COPY . .
 
+# 调试：显示当前目录内容和app.py的前几行
+RUN ls -la && cat app.py | head -n 20
+
 # 初始化数据库
 RUN python migrate_to_sqlite.py && python create_inverted_index.py
 
