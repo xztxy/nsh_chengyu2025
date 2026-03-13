@@ -13,6 +13,9 @@ RUN npm install --production
 # 复制项目代码
 COPY . .
 
+# 调试：打印文件列表
+RUN ls -la
+
 # 确保数据目录存在
 RUN mkdir -p /app/data
 
