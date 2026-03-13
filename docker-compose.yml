@@ -27,7 +27,7 @@ services:
       - SECRET_PASSWORD=${SECRET_PASSWORD:-lsz20100}
       - DB_PATH=idioms.db
     # 拉取策略
-    pull_policy: if_not_present
+    pull_policy: always
     # 网络配置
     networks:
       - nsh-chengyu-network
