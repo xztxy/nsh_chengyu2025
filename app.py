@@ -1,10 +1,9 @@
 from flask import Flask, request, render_template, redirect, url_for, session, jsonify
-from flask_caching import Cache
 import logging
 import hashlib
 from config import Config
 from db import load_pending_idioms, save_pending_idiom, update_idiom_weight, delete_pending_idiom, check_idiom_exists, save_idiom, get_db_connection, get_idiom_detail
-from search import search_idioms, parse_input, get_initials_and_finals, init_cache
+from search import search_idioms, parse_input, get_initials_and_finals
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -13,16 +12,12 @@ app.config.from_object(Config)
 logging.basicConfig(level=getattr(logging, Config.LOG_LEVEL))
 logger = logging.getLogger(__name__)
 
-# 创建并初始化缓存对象
-cache = Cache(app)
-
-# 初始化搜索模块的缓存
-init_cache(app)
+# 禁用缓存以避免初始化问题
+# 移除缓存装饰器和初始化代码
 
 # 模板已移至templates目录下的独立文件中
 
 @app.route('/', methods=['GET'])
-@cache.cached(timeout=300)  # 缓存主页五分钟
 def index():
     return render_template('index.html', idioms=None, error_message=None)
 
